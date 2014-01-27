@@ -49,7 +49,7 @@ class Server {
 
     private function initZmq() {
         try {
-            $this->$ctx = new \ZMQContext();
+            $this->ctx = new \ZMQContext();
         } catch (\Exception $e) {
             self::$log->addError('Could not start ZMQ context : ' . $e->getMessage());
             return false;
@@ -84,3 +84,4 @@ class Server {
 
 
 }
+
