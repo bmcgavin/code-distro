@@ -20,8 +20,7 @@ class Server {
     public static $log = null;
 
     private $ctx = null;
-    private $pubSock = null;
-    private $recSock = null;
+    private $sock = null;
 
     public function __construct($config) {
         $this->readConfig($config);
@@ -29,18 +28,18 @@ class Server {
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->bindZmq(self::$config['bind_pub_port'], ZMQ::SOCKET_PUB)) {
+        if (!$this->bindZmq(self::$config['bind_port'], ZMQ::SOCKET_PUB)) {
             die(2);
         }
-        if (!$this->bindZmq(self::$config['bind_rec_port'], ZMQ::SOCKET_REC)) {
-            die(3);
+        while (true) {
+            $message = $this->sock->recv();
         }
     }
 
     private function bindZmq($port, $type) {
         try {
-            $queue = new \ZMQSocket($this->ctx, $type);
-            $queue->bind("tcp://127.0.0.1:$port");
+            $this->sock = new \ZMQSocket($this->ctx, $type);
+            $this->sock->bind("tcp://127.0.0.1:$port");
         } catch (Exception $e) {
             self::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
@@ -59,8 +58,7 @@ class Server {
     private function readConfig($config) {
         $defaults = array(
             'server_debug_log' => '/var/log/code_distro/server_debug.log',
-            'bind_pub_port'    => 5555,
-            'bind_rec_port'    => 5556,
+            'bind_port'    => 5555,
         );
         try {
             //Read config
