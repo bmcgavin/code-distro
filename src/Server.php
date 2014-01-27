@@ -44,6 +44,7 @@ class Server {
             self::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
         }
+        return true;
     }
 
     private function initZmq() {
@@ -53,6 +54,7 @@ class Server {
             self::$log->addError('Could not start ZMQ context : ' . $e->getMessage());
             return false;
         }
+        return true;
     }
 
     private function readConfig($config) {
@@ -71,6 +73,7 @@ class Server {
             die($e->getMessage());
         }
         self::$config = array_merge($config, $defaults);
+        return true;
     }
 
     private function setupLogging($filename, $logname = 'debug', $loglevel = Logger::DEBUG) {
@@ -78,6 +81,7 @@ class Server {
         self::$log->pushHandler(
             new StreamHandler($filename, $loglevel)
         );
+        return true;
     }
 
 
