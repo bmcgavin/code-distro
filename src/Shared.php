@@ -50,7 +50,7 @@ abstract class Shared {
         try {
             switch($type) {
             case \ZMQ::SOCKET_SUB:
-                $varName = 'pubSock';
+                $varName = 'subSock';
                 break;
             case \ZMQ::SOCKET_REQ:
                 $varName = 'reqSock';
