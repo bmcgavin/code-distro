@@ -1,7 +1,7 @@
 <?php
 
 $config = array(
-    'debug_log' => '/var/log/code_distro/server_rec.debug',
+    'debug_log' => '/var/log/code_distro/server_pub.debug',
     'bind_port' => 5556,
-    'bind_type' => \ZMQ::SOCKET_REC,
+    'bind_type' => \ZMQ::SOCKET_PUB,
 );
