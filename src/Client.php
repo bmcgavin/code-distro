@@ -8,7 +8,8 @@ class Client extends Shared {
     public static $log = null;
 
     protected $ctx = null;
-    protected $sock = null;
+    protected $subSock = null;
+    protected $reqSock = null;
 
     public function __construct($config) {
         $this->readConfig($config);
@@ -24,10 +25,11 @@ class Client extends Shared {
 
     public function subLoop() {
         //Firehose
-        $this->sock->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, '');
+        $this->subSock->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, '');
         while (true) {
-            $message = $this->sock->recv();
+            $message = $this->subSock->recv();
             self::$log->addDebug('Got message : ' . print_r($message, true));
+            $this->dispatch($message);
         }
     }
 }

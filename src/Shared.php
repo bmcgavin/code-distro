@@ -50,7 +50,10 @@ abstract class Shared {
         try {
             switch($type) {
             case \ZMQ::SOCKET_SUB:
-                $varName = 'sock';
+                $varName = 'pubSock';
+                break;
+            case \ZMQ::SOCKET_REQ:
+                $varName = 'reqSock';
                 break;
             default:
                 throw new \Exception('Unknown socket type ' . $type);
@@ -62,7 +65,7 @@ abstract class Shared {
             return false;
         }
         static::$log->addDebug('Connected to port ' . $port);
-        return true;
+        return $this->$varName;
     }
 
     protected function bindZmq($port, $type) {
@@ -85,5 +88,22 @@ abstract class Shared {
         }
         static::$log->addDebug('Bound on port ' . $port);
         return true;
+    }
+
+    protected function dispatch($message) {
+        $obj = json_decode($message);
+        if ($obj === null) {
+            self::$log->addError('Received message is not valid json');
+            return false;
+        }
+        if (!property_exists($obj, 'type')) {
+            self::$log->addError('object does not contain type property');
+            return false;
+        }
+        if (!array_key_exists($obj->type . '_port', self::$config)) {
+            self::$log->addError('do not know how to dispatch ' . $obj->type);
+        }
+        $this->connectZmq(self::$config[$obj->type . '_port'], \ZMQ::SOCKET_REQ)->send($obj->payload);
+        self::$log->addDebug('sent payload');
     }
 }
