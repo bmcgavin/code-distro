@@ -6,9 +6,6 @@
 
 namespace Codedistro;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-
 /**
  * Server - receive and ack the Github hook POSTs, and then publish
  * over a 0mq PUB link
@@ -19,9 +16,9 @@ class Server extends Shared {
     public static $config = null;
     public static $log = null;
 
-    private $ctx = null;
-    private $repSock = null;
-    private $pubSock = null;
+    protected $ctx = null;
+    protected $repSock = null;
+    protected $pubSock = null;
 
     public function __construct($config) {
         $this->readConfig($config);

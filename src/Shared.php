@@ -2,6 +2,9 @@
 
 namespace Codedistro;
 
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
 abstract class Shared {
 
     protected function initZmq() {
@@ -23,7 +26,7 @@ abstract class Shared {
         try {
             //Read config
             if (!file_exists($configFile)) {
-                throw new Exception('Cannot find file ' . $configFile);
+                throw new \Exception('Cannot find file ' . $configFile);
             }
             include_once($configFile);
         } catch (\Exception $e) {
@@ -53,11 +56,11 @@ abstract class Shared {
                 $varName = 'repSock';
                 break;
             default:
-                throw new Exception('Unknown value ' . $type);
+                $varName = 'sock';
             }
             $this->$varName = new \ZMQSocket($this->ctx, $type);
             $this->$varName->bind("tcp://127.0.0.1:$port");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             static::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
         }

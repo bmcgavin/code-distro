@@ -2,16 +2,13 @@
 
 namespace Codedistro;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-
 class Client extends Shared {
     
     public static $config = null;
     public static $log = null;
 
-    private $ctx = null;
-    private $sock = null;
+    protected $ctx = null;
+    protected $sock = null;
 
     public function __construct($config) {
         $this->readConfig($config);
