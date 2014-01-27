@@ -2,9 +2,15 @@
 
 namespace Codedistro;
 
-class GithubHook {
+class GithubHook extends Shared {
 
-    public static function process($message) {
+    private static $log = null;
+
+    public function __construct($log) {
+        self::$log = $log;
+    }
+
+    public function process($message) {
         self::$log->addDebug('Got message : ' . print_r($message, true));
     }
 }
