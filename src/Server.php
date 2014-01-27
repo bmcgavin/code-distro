@@ -58,9 +58,10 @@ class Server extends Shared {
                 self::$log->addDebug('Publishing...');
                 $this->publish($message);
             }
+            
             if (
                 array_key_exists('process', self::$config)
-             && class_exists(self::$config['process'])
+             && class_exists(__NAMESPACE__ . '\\' . self::$config['process'])
             ) {
                 $className = self::$config['process'];
                 self::$log->addDebug('Processing with ' . $className);
