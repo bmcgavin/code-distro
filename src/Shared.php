@@ -22,6 +22,7 @@ abstract class Shared {
         $defaults = array(
             'debug_log' => '/var/log/code_distro/server_debug.log',
             'bind_port'    => 5555,
+            'publish'      => false,
         );
         try {
             //Read config

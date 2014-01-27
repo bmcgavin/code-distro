@@ -26,8 +26,10 @@ class Server extends Shared {
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->bindZmq(self::$config['bind_pub_port'], self::$config['bind_pub_type'])) {
-            die(2);
+        if (self::$config['publish'] === true) {
+            if (!$this->bindZmq(self::$config['bind_pub_port'], self::$config['bind_pub_type'])) {
+                die(2);
+            }
         }
         if (!$this->bindZmq(self::$config['bind_rep_port'], self::$config['bind_rep_type'])) {
             die(3);

@@ -6,4 +6,5 @@ $config = array(
     'bind_rep_type' => \ZMQ::SOCKET_REP,
     'bind_pub_port' => 5556,
     'bind_pub_type' => \ZMQ::SOCKET_PUB,
+    'publish'       => true,
 );
