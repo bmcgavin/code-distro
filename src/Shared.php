@@ -46,6 +46,25 @@ abstract class Shared {
         return true;
     }
 
+    protected function connectZmq($port, $type) {
+        try {
+            switch($type) {
+            case \ZMQ::SOCKET_SUB:
+                $varName = 'sock';
+                break;
+            default:
+                throw new \Exception('Unknown socket type ' . $type);
+            }
+            $this->$varName = new \ZMQSocket($this->ctx, $type);
+            $this->$varName->connect("tcp://127.0.0.1:$port");
+        } catch (\Exception $e) {
+            static::$log->addError('Could not create socket or connect to port ' . $port . ': ' . $e->getMessage());
+            return false;
+        }
+        static::$log->addDebug('Connected to port ' . $port);
+        return true;
+    }
+
     protected function bindZmq($port, $type) {
         try {
             switch($type) {
@@ -56,12 +75,12 @@ abstract class Shared {
                 $varName = 'repSock';
                 break;
             default:
-                $varName = 'sock';
+                throw new \Exception('Unknown socket type ' . $type);
             }
             $this->$varName = new \ZMQSocket($this->ctx, $type);
             $this->$varName->bind("tcp://127.0.0.1:$port");
         } catch (\Exception $e) {
-            static::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
+            static::$log->addError('Could not create socket or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
         }
         static::$log->addDebug('Bound on port ' . $port);
