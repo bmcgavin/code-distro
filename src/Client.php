@@ -23,6 +23,8 @@ class Client extends Shared {
     }
 
     public function subLoop() {
+        //Firehose
+        $this->sock->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, '');
         while (true) {
             $message = $this->sock->recv();
             self::$log->addDebug('Got message : ' . print_r($message, true));
