@@ -55,7 +55,9 @@ class Server extends Shared {
             $this->repSock->send('ack');
             self::$log->addDebug('Sent ack');
             self::$log->addDebug('Publishing...');
-            $this->publish($message);
+            if (self::$config['publish'] == true) {
+                $this->publish($message);
+            }
         }
     }
 

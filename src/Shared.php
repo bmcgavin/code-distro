@@ -103,6 +103,7 @@ abstract class Shared {
         }
         if (!array_key_exists($obj->type . '_port', static::$config)) {
             static::$log->addError('do not know how to dispatch ' . $obj->type);
+            return false;
         }
         $this->connectZmq(static::$config[$obj->type . '_port'], \ZMQ::SOCKET_REQ)->send($obj->payload);
         static::$log->addDebug('sent payload');
