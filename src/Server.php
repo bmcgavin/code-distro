@@ -59,17 +59,17 @@ class Server {
         return true;
     }
 
-    private function readConfig($config) {
+    private function readConfig($configFile) {
         $defaults = array(
             'debug_log' => '/var/log/code_distro/server_debug.log',
             'bind_port'    => 5555,
         );
         try {
             //Read config
-            if (!file_exists($config)) {
-                throw new Exception('Cannot find file ' . $config);
+            if (!file_exists($configFile)) {
+                throw new Exception('Cannot find file ' . $configFile);
             }
-            include_once($config);
+            include_once($configFile);
         } catch (\Exception $e) {
             error_log($e->getMessage());
             die($e->getMessage());
