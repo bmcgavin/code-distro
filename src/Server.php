@@ -54,9 +54,17 @@ class Server extends Shared {
             //need to ack
             $this->repSock->send('ack');
             self::$log->addDebug('Sent ack');
-            self::$log->addDebug('Publishing...');
             if (self::$config['publish'] == true) {
+                self::$log->addDebug('Publishing...');
                 $this->publish($message);
+            }
+            if (
+                array_key_exists('process', self::$config)
+             && class_exists(self::$config['process'])
+            ) {
+                $className = self::$config['process'];
+                self::$log->addDebug('Processing with ' . $className);
+                $className::process($message);
             }
         }
     }
