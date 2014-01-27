@@ -94,17 +94,17 @@ abstract class Shared {
     protected function dispatch($message) {
         $obj = json_decode($message);
         if ($obj === null) {
-            self::$log->addError('Received message is not valid json');
+            static::$log->addError('Received message is not valid json');
             return false;
         }
         if (!property_exists($obj, 'type')) {
-            self::$log->addError('object does not contain type property');
+            static::$log->addError('object does not contain type property');
             return false;
         }
-        if (!array_key_exists($obj->type . '_port', self::$config)) {
-            self::$log->addError('do not know how to dispatch ' . $obj->type);
+        if (!array_key_exists($obj->type . '_port', static::$config)) {
+            static::$log->addError('do not know how to dispatch ' . $obj->type);
         }
-        $this->connectZmq(self::$config[$obj->type . '_port'], \ZMQ::SOCKET_REQ)->send($obj->payload);
-        self::$log->addDebug('sent payload');
+        $this->connectZmq(static::$config[$obj->type . '_port'], \ZMQ::SOCKET_REQ)->send($obj->payload);
+        static::$log->addDebug('sent payload');
     }
 }
