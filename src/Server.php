@@ -74,7 +74,7 @@ class Server {
             error_log($e->getMessage());
             die($e->getMessage());
         }
-        self::$config = array_merge($config, $defaults);
+        self::$config = array_merge($defaults, $config);
         return true;
     }
 
