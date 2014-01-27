@@ -24,11 +24,11 @@ class Server {
 
     public function __construct($config) {
         $this->readConfig($config);
-        $this->setupLogging(self::$config['server_debug_log']);
+        $this->setupLogging(self::$config['debug_log']);
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->bindZmq(self::$config['bind_port'], \ZMQ::SOCKET_PUB)) {
+        if (!$this->bindZmq(self::$config['bind_port'], $config['bind_type'])) {
             die(2);
         }
         while (true) {
@@ -44,6 +44,7 @@ class Server {
             self::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
         }
+        self::$log->addDebug('Bound on port ' . $port);
         return true;
     }
 
@@ -54,12 +55,13 @@ class Server {
             self::$log->addError('Could not start ZMQ context : ' . $e->getMessage());
             return false;
         }
+        self::$log->addDebug('Got 0mq ctx');
         return true;
     }
 
     private function readConfig($config) {
         $defaults = array(
-            'server_debug_log' => '/var/log/code_distro/server_debug.log',
+            'debug_log' => '/var/log/code_distro/server_debug.log',
             'bind_port'    => 5555,
         );
         try {
@@ -81,6 +83,7 @@ class Server {
         self::$log->pushHandler(
             new StreamHandler($filename, $loglevel)
         );
+        self::$log->addDebug('Got logfile');
         return true;
     }
 
