@@ -1,0 +1,15 @@
+{
+    "name": "bmcgavin/code-distro",
+    "authors": [
+        {
+            "name": "Richard Jones",
+            "email": "rich@linuxplicable.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Codedistro\\": "src/"}
+    },
+    "require": {
+        "monolog/monolog": "dev-master"
+    }
+}
