@@ -16,7 +16,7 @@ class Client extends Shared {
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->connectZmq(self::$config['connect_sub_port'], self::$config['connectbind_sub_type'])) {
+        if (!$this->connectZmq(self::$config['connect_sub_port'], self::$config['connect_sub_type'])) {
             die(2);
         }
         $this->subLoop();
