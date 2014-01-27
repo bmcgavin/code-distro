@@ -28,7 +28,7 @@ class Server {
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->bindZmq(self::$config['bind_port'], ZMQ::SOCKET_PUB)) {
+        if (!$this->bindZmq(self::$config['bind_port'], \ZMQ::SOCKET_PUB)) {
             die(2);
         }
         while (true) {
