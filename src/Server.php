@@ -20,7 +20,8 @@ class Server {
     public static $log = null;
 
     private $ctx = null;
-    private $sock = null;
+    private $repSock = null;
+    private $pubSock = null;
 
     public function __construct($config) {
         $this->readConfig($config);
@@ -28,18 +29,51 @@ class Server {
         if (!$this->initZmq()) {
             die(1);
         }
-        if (!$this->bindZmq(self::$config['bind_port'], self::$config['bind_type'])) {
+        if (!$this->bindZmq(self::$config['bind_pub_port'], self::$config['bind_pub_type'])) {
             die(2);
         }
+        if (!$this->bindZmq(self::$config['bind_rep_port'], self::$config['bind_rep_type'])) {
+            die(3);
+        }
+        $this->repLoop();
+    }
+
+    public function publish($message) {
+        try {
+            $this->pubSock->send($message);
+        } catch (Exception $e) {
+            self::$log->addError('Could not publish : ' . $e->getMessage());
+        }
+        return false;
+    }
+
+    public function repLoop() {
         while (true) {
-            $message = $this->sock->recv();
+            $message = $this->repSock->recv();
+            self::$log->addDebug('Got message :' . print_r($message));
+
+            //need to ack
+            $this->repSock->send('ack');
+            self::$log->addDebug('Sent ack');
+            self::$log->addDebug('Publishing...');
+            $this->publish($message);
         }
     }
 
     private function bindZmq($port, $type) {
         try {
-            $this->sock = new \ZMQSocket($this->ctx, $type);
-            $this->sock->bind("tcp://127.0.0.1:$port");
+            switch($type) {
+            case \ZMQ::SOCKET_PUB:
+                $varName = 'pubSock';
+                break;
+            case \ZMQ::SOCKET_REP:
+                $varName = 'repSock';
+                break;
+            default:
+                throw new Exception('Unknown value ' . $type);
+            }
+            $this->$varName = new \ZMQSocket($this->ctx, $type);
+            $this->$varName->bind("tcp://127.0.0.1:$port");
         } catch (Exception $e) {
             self::$log->addError('Could not create queue or bind on port ' . $port . ': ' . $e->getMessage());
             return false;
