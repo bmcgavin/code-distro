@@ -65,7 +65,7 @@ class Server extends Shared {
             ) {
                 $className = __NAMESPACE__ . '\\' . self::$config['process'];
                 self::$log->addDebug('Processing with ' . $className);
-                $c = new $className;
+                $c = new $className(self::$log);
                 $c->process($message);
             }
         }
