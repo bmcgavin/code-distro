@@ -68,6 +68,8 @@ class Server extends Shared {
                     if ($obj === null) {
                         throw new \Exception('Message is not JSON');
                     }
+                    $message = $obj;
+                    unset($obj);
                     $className = __NAMESPACE__ . '\\' . self::$config['process'];
                     self::$log->addDebug('Processing with ' . $className);
                     $c = new $className(self::$log, self::$config);
