@@ -51,7 +51,7 @@ class GithubHook extends Shared {
             'before' => true,
             'after' => true,
             'repository' => array(
-                'url'
+                'url' => true,
             ),
         );
         $this->validateArray($requiredProperties, $message);
