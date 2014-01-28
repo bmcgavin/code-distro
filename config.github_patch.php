@@ -7,6 +7,8 @@ $config = array(
     'bind_rep_port' => 5558,
     'bind_rep_type' => \ZMQ::SOCKET_REP,
     'process'       => 'GithubPatch',
+    //Processor specific
+    'repo_bmcgavin_cross-words' => '/tmp/patcher/bmcgavin/cross-words',
 );
 
 
