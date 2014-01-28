@@ -59,7 +59,7 @@ class GithubHook extends Shared {
         self::$log->addDebug($output);
 
         //Get the diff in patch format
-        $command = '/usr/bin/git --work-tree=' . $target_dir . ' format-patch ' . $before . '..' . $after . ' --stdout';
+        $command = '/usr/bin/git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout';
         self::$log->addDebug($command);
         $output = exec($command);
         self::$log->addDebug($output);
