@@ -34,17 +34,39 @@ class GithubHook extends Shared {
             $response->payload = 'Could not write to ' . self::$config['temp_directory'];
             return json_encode($response);
         }
-        
-            
+        if (!is_dir(self::$config['temp_directory'])) {
+            mkdir(self::$config['temp_directory']);
+        }
+
+        $user = basename(dirname($this->data['url']));
+        self::$log->addDebug('User : ' . $user);
+        if (!is_dir(self::$config['temp_directory'] . DIRECTORY_SEPARATOR . $user)) {
+            mkdir(self::$config['temp_directory'] . DIRECTORY_SEPARATOR . $user);
+        }
+
+        $repo = basename($this->data['url']);
+        self::$log->addDebug('Repo : ' . $repo);
+        $target_dir = self::$config['temp_directory'] . DIRECTORY_SEPARATOR . $user . DIRECTORY_SEPARATOR . $repo;
+        self::$log->addDebug('TargetDir : ' . $target_dir);
+
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir);
+        }
+
+        $command = '/usr/bin/git clone git@github.com:' . $user . '/' . $repo . ' ' . $target_dir;
+        self::$log->addDebug($command);
+        $output = exec($command);
+        self::$log->addDebug($output);
 
         //Get the diff in patch format
+        $command = '/usr/bin/git --work-tree=' . $target_dir . ' format-patch ' . $before . '..' . $after . ' --stdout';
+        self::$log->addDebug($command);
+        $output = exec($command);
+        self::$log->addDebug($output);
 
         //Send the diff in patch format back to the pub/sub server
-
-
         $response->status = 'success';
-        $response->payload = 'Here is a patch';
-
+        $response->payload = $output;
         return json_encode($response);
 
     }
