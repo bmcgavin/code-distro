@@ -68,7 +68,7 @@ class GithubPatch extends Shared {
         file_put_contents($filename, $this->data['patch']);
 
         //Try to process as a github patch
-        $oldDir = pwd();
+        $oldDir = getcwd();
         chdir($target_dir);
         $command = '/usr/bin/git apply < ' . $filename;
         self::$log->addDebug($command);
