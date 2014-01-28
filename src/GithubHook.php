@@ -51,9 +51,11 @@ class GithubHook extends Shared {
 
         if (!is_dir($target_dir)) {
             mkdir($target_dir);
+            $command = '/usr/bin/git clone git@github.com:' . $user . '/' . $repo . ' ' . $target_dir;
+        } else {
+            $command = '/usr/bin/git --work-tree=' . $target_dir . ' fetch';
         }
 
-        $command = '/usr/bin/git clone git@github.com:' . $user . '/' . $repo . ' ' . $target_dir;
         self::$log->addDebug($command);
         $output = exec($command);
         self::$log->addDebug($output);
