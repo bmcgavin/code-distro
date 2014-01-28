@@ -52,19 +52,24 @@ class GithubPatch extends Shared {
         }
 
         //Check the current revision
-        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
-        self::$log->addDebug($command);
-        $output = trim(exec($command));
-        self::$log->addDebug($output);
+        if (file_exists($target_dir . '/.gitrevision')) {
+            $revision = file_get_contents($target_dir . '/.gitrevision');
+        } else {
+            $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
+            self::$log->addDebug($command);
+            $revision = trim(exec($command));
+        }
+        self::$log->addDebug($revision);
 
         //Check that before == current
-        if ($output !== $this->data['before']) {
-            $response->payload = 'Not at correct patch level : wc @ ' . $output . ', patch starts @ ' . $this->data['before'];
+        if ($revision !== $this->data['before']) {
+            $response->payload = 'Not at correct patch level : wc @ ' . $revision . ', patch starts @ ' . $this->data['before'];
             return json_encode($response);
         }
 
         //Write patch to temp file
         $filename = tempnam(self::$config['repo_' . $this->data['user'] . '_' . $this->data['repo']], 'patch_');
+        self::$log->addDebug($filename);
         file_put_contents($filename, $this->data['patch']);
 
         //Try to process as a github patch
@@ -76,6 +81,9 @@ class GithubPatch extends Shared {
         self::$log->addDebug($output);
         chdir($oldDir);
         unlink($filename);
+
+        //Store new revision
+        file_put_contents($target_dir . '/.gitrevision', $this->data['after']);
         
         return json_encode($response);
 
