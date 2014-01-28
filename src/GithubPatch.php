@@ -54,7 +54,7 @@ class GithubPatch extends Shared {
         //Check the current revision
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
         self::$log->addDebug($command);
-        $output = exec($command);
+        $output = trim(exec($command));
         self::$log->addDebug($output);
 
         //Check that before == current
