@@ -27,7 +27,7 @@ class GithubHook extends Shared {
             $response->payload = $e->getMessage();
             return json_encode($response);
         }
-        self::$log->addDebug('data : ' . $this->data);
+        self::$log->addDebug('data : ' . print_r($this->data));
 
         //Clone the repo
         if (!is_writeable(self::$config['temp_directory'])) {
