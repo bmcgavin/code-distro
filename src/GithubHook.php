@@ -13,7 +13,7 @@ class GithubHook extends Shared {
     }
 
     public function process($message) {
-        $response = new stdClass;
+        $response = new \stdClass;
         $response->type = 'error';
         $response->payload = '';
         self::$log->addDebug('processing message : ' . print_r($message, true));
