@@ -58,7 +58,7 @@ class GithubPatch extends Shared {
         self::$log->addDebug($output);
 
         //Check that before == current
-        if ($output === $this->data['before']) {
+        if ($output !== $this->data['before']) {
             $response->payload = 'Not at correct patch level : wc @ ' . $output . ', patch starts @ ' . $this->data['before'];
             return json_encode($response);
         }
@@ -68,10 +68,13 @@ class GithubPatch extends Shared {
         file_put_contents($filename, $this->data['patch']);
 
         //Try to process as a github patch
-        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' am < ' . $filename;
+        $oldDir = pwd();
+        chdir($target_dir);
+        $command = '/usr/bin/git apply < ' . $filename;
         self::$log->addDebug($command);
         $output = exec($command);
         self::$log->addDebug($output);
+        chdir($oldDir);
         unlink($filename);
         
         return json_encode($response);
