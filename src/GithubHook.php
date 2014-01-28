@@ -70,9 +70,10 @@ class GithubHook extends Shared {
 
         //Send the diff in patch format back to the pub/sub server
         $patch = file_get_contents($filename);
+        self::$log->addDebug($patch);
         unlink($filename);
         $response->status = 'success';
-        $response->payload = $filename;
+        $response->payload = $patch;
         return json_encode($response);
 
     }
