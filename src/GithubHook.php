@@ -61,14 +61,18 @@ class GithubHook extends Shared {
         self::$log->addDebug($output);
 
         //Get the diff in patch format
-        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout';
+        $filename = tempnam(self::$config['temp_directory']);
+        self::$log->addDebug($filename);
+        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout > ' . $filename;
         self::$log->addDebug($command);
         $output = exec($command);
         self::$log->addDebug($output);
 
         //Send the diff in patch format back to the pub/sub server
+        $patch = file_get_contents($filename);
+        unlink($filename);
         $response->status = 'success';
-        $response->payload = $output;
+        $response->payload = $filename;
         return json_encode($response);
 
     }
