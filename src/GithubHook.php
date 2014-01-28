@@ -27,7 +27,7 @@ class GithubHook extends Shared {
             $response->payload = $e->getMessage();
             return json_encode($response);
         }
-        self::$log->addDebug('data : ' . print_r($this->data));
+        self::$log->addDebug('data : ' . print_r($this->data, true));
 
         //Clone the repo
         if (!is_writeable(self::$config['temp_directory'])) {
@@ -69,8 +69,9 @@ class GithubHook extends Shared {
             }
             if (is_array($value)) {
                 $this->validateArray($value, $message->{$key});
+            } else {
+                $this->data[$key] = $message->{$key};
             }
-            $this->data[$key] = $message->{$key};
 
         } 
     }
