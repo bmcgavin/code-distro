@@ -49,7 +49,7 @@ class GithubHook extends Shared {
                 'url'
             ),
         );
-        $this->validateArray($requireProperties, $message);
+        $this->validateArray($requiredProperties, $message);
     }
 
     private function validateArray($array, $message) {
