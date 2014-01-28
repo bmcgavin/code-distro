@@ -9,6 +9,7 @@ $config = array(
     'process'       => 'GithubPatch',
     //Processor specific
     'repo_bmcgavin_cross-words' => '/tmp/patcher/bmcgavin/cross-words',
+    'repo_bmcgavin_code-distro' => '/tmp/patcher/bmcgavin/code-distro',
 );
 
 

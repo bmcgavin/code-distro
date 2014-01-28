@@ -46,6 +46,10 @@ class GithubPatch extends Shared {
             $response->payload = $target_dir . ' does not exist';
             return json_encode($response);
         }
+        if (!is_dir($target_dir . '/.git')) {
+            $response->payload = $target_dir . ' is not a git repo';
+            return json_encode($response);
+        }
 
         //Check the current revision
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
