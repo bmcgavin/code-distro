@@ -37,8 +37,8 @@ class GithubPatch extends Shared {
         self::$log->addDebug('data : ' . print_r($this->data, true));
 
         //Find where the working copy is
-        if (!array_key_exists('repo_' . $this->data['user'] . '_' . $this->data['repo'])) {
-            $reponse->payload = 'No location for ' . $this->data['user'] . ':' . $this->data['repo'];
+        if (!array_key_exists('repo_' . $this->data['user'] . '_' . $this->data['repo'], self::$config)) {
+            $response->payload = 'No location for ' . $this->data['user'] . ':' . $this->data['repo'];
             return json_encode($response);
         }
         $target_dir = self::$config['repo_' . $this->data['user'] . '_' . $this->data['repo']];
