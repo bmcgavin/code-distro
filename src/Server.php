@@ -40,7 +40,7 @@ class Server extends Shared {
     public function publish($message) {
         try {
             $this->pubSock->send($message);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             self::$log->addError('Could not publish : ' . $e->getMessage());
         }
         return false;
@@ -63,13 +63,22 @@ class Server extends Shared {
                 array_key_exists('process', self::$config)
              && class_exists(__NAMESPACE__ . '\\' . self::$config['process'])
             ) {
-                $className = __NAMESPACE__ . '\\' . self::$config['process'];
-                self::$log->addDebug('Processing with ' . $className);
-                $c = new $className(self::$log, self::$config);
-                $response = $c->process($message);
+                try {
+                    $obj = json_decode($message);
+                    if ($obj === null) {
+                        throw new \Exception('Message is not JSON');
+                    }
+                    $className = __NAMESPACE__ . '\\' . self::$config['process'];
+                    self::$log->addDebug('Processing with ' . $className);
+                    $c = new $className(self::$log, self::$config);
+                    $response = $c->process($message);
+                } catch (\Exception $e) {
+                    self::$log->addError('Could not process : ' . $e->getMessage());
+                    return false;
+                }
                 try {
                     $this->connectZmq(static::$config['connect_req_port'], static::$config['connect_req_type'])->send($response);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     self::$log->addError('Could not send response : ' . $e->getMessage());
                 }
             }

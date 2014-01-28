@@ -21,7 +21,7 @@ class GithubHook extends Shared {
         //Parse the data we need from the message
         try {
             $this->extractValue($message);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response->payload = $e->getMessage();
             return json_encode($response);
         }
@@ -62,7 +62,7 @@ class GithubHook extends Shared {
         self::$log->addDebug('validateArray message input : ' . print_r($message, true));
         foreach($array as $key => $value) {
             if (!property_exists($message, $key)) {
-                throw new Exception('$message has no ' . $key);
+                throw new \Exception('$message has no ' . $key);
             }
             if (is_array($value)) {
                 $this->validateArray($value, $message->{$key});
