@@ -14,8 +14,9 @@ class GithubHook extends Shared {
 
     public function process($message) {
         $response = new \stdClass;
-        $response->type = 'error';
-        $response->payload = '';
+        $response->type = 'github_patch';
+        $response->status = 'error';
+        $response->payload = 'processing error';
         self::$log->addDebug('processing message : ' . print_r($message, true));
         //Parse the data we need from the message
         try {
@@ -38,6 +39,10 @@ class GithubHook extends Shared {
         //Send the diff in patch format back to the pub/sub server
 
 
+        $response->status = 'success';
+        $response->payload = 'Here is a patch';
+
+        return json_encode($response);
 
     }
 
