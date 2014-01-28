@@ -22,7 +22,14 @@ class GithubHook extends Shared {
         self::$log->addDebug('processing message : ' . print_r($message, true));
         //Parse the data we need from the message
         try {
-            $this->extractValue($message);
+            $requiredProperties = array(
+                'before' => true,
+                'after' => true,
+                'repository' => array(
+                    'url' => true,
+                ),
+            );
+            $this->validateArray($requiredProperties, $message);
         } catch (\Exception $e) {
             $response->payload = $e->getMessage();
             return json_encode($response);
@@ -73,39 +80,17 @@ class GithubHook extends Shared {
         self::$log->addDebug($patch);
         unlink($filename);
         $response->status = 'success';
-        $response->payload = $patch;
+        $payload = array(
+            'patch' => $patch,
+            'before' => $this->data['before'],
+            'after' => $this->data['after'],
+            'user' => $user,
+            'repo' => $repo,
+        );
+        $response->payload = json_encode($payload);
         return json_encode($response);
 
     }
-
-    private function extractValue($message) {
-        $requiredProperties = array(
-            'before' => true,
-            'after' => true,
-            'repository' => array(
-                'url' => true,
-            ),
-        );
-        $this->validateArray($requiredProperties, $message);
-    }
-
-    private function validateArray($array, $message) {
-        self::$log->addDebug('validateArray array input : ' . print_r($array, true));
-        self::$log->addDebug('validateArray message input : ' . print_r($message, true));
-        foreach($array as $key => $value) {
-            if (!property_exists($message, $key)) {
-                throw new \Exception('$message has no ' . $key);
-            }
-            if (is_array($value)) {
-                $this->validateArray($value, $message->{$key});
-            } else {
-                $this->data[$key] = $message->{$key};
-            }
-
-        } 
-    }
-
-
 }
 
 

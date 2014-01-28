@@ -108,4 +108,22 @@ abstract class Shared {
         $this->connectZmq(static::$config[$obj->type . '_port'], \ZMQ::SOCKET_REQ)->send($obj->payload);
         static::$log->addDebug('sent payload');
     }
+
+    protected function validateArray($array, $message) {
+        self::$log->addDebug('validateArray array input : ' . print_r($array, true));
+        self::$log->addDebug('validateArray message input : ' . print_r($message, true));
+        foreach($array as $key => $value) {
+            if (!property_exists($message, $key)) {
+                throw new \Exception('$message has no ' . $key);
+            }
+            if (is_array($value)) {
+                $this->validateArray($value, $message->{$key});
+            } else {
+                $this->data[$key] = $message->{$key};
+            }
+
+        } 
+    }
+
+
 }
