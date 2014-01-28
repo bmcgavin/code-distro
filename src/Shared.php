@@ -110,8 +110,8 @@ abstract class Shared {
     }
 
     protected function validateArray($array, $message) {
-        self::$log->addDebug('validateArray array input : ' . print_r($array, true));
-        self::$log->addDebug('validateArray message input : ' . print_r($message, true));
+        static::$log->addDebug('validateArray array input : ' . print_r($array, true));
+        static::$log->addDebug('validateArray message input : ' . print_r($message, true));
         foreach($array as $key => $value) {
             if (!property_exists($message, $key)) {
                 throw new \Exception('$message has no ' . $key);
