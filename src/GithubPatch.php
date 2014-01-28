@@ -4,8 +4,8 @@ namespace Codedistro;
 
 class GithubPatch extends Shared {
 
-    private static $log = null;
-    private static $config = null;
+    protected static $log = null;
+    protected static $config = null;
 
     public $data = null;
 
