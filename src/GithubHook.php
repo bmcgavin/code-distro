@@ -61,7 +61,7 @@ class GithubHook extends Shared {
         self::$log->addDebug($output);
 
         //Get the diff in patch format
-        $filename = tempnam(self::$config['temp_directory']);
+        $filename = tempnam(self::$config['temp_directory'], $user . $repo);
         self::$log->addDebug($filename);
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout > ' . $filename;
         self::$log->addDebug($command);
