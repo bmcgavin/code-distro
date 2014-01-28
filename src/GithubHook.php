@@ -5,6 +5,7 @@ namespace Codedistro;
 class GithubHook extends Shared {
 
     private static $log = null;
+    private static $config = null;
 
     public function __construct($log, $config) {
         self::$log = $log;
