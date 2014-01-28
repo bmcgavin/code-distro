@@ -84,7 +84,12 @@ class GithubPatch extends Shared {
 
         //Store new revision
         file_put_contents($target_dir . '/.gitrevision', $this->data['after']);
-        
+
+        $response->status = 'success';
+        $payload = array(
+            'message' => 'done - new revision ' . $this->data['after']
+        );
+        $response->payload = json_encode($payload);
         return json_encode($response);
 
     }
