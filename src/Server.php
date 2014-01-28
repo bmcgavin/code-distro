@@ -65,7 +65,7 @@ class Server extends Shared {
             ) {
                 $className = __NAMESPACE__ . '\\' . self::$config['process'];
                 self::$log->addDebug('Processing with ' . $className);
-                $c = new $className(self::$log);
+                $c = new $className(self::$log, self::$config);
                 $response = $c->process($message);
                 try {
                     $this->connectZmq(static::$config['connect_req_port'], static::$config['connect_req_type'])->send($response);
