@@ -2,9 +2,20 @@
 
 $config = array(
     'debug_log' => '/var/log/code_distro/server_rep.debug',
-    'bind_rep_port' => 5555,
-    'bind_rep_type' => \ZMQ::SOCKET_REP,
-    'bind_pub_port' => 5556,
-    'bind_pub_type' => \ZMQ::SOCKET_PUB,
+    'broker_type' => 'ZeroMQ',
+    'input' => array(
+        'prot' => 'tcp://',
+        'ip' => '127.0.0.1',
+        'port' => 5555,
+        'type' => \ZMQ::SOCKET_REP,
+    ),
+    'ack_required' => true,
+    'output' => array(
+        'prot' => 'tcp://',
+        'ip' => '127.0.0.1',
+        'port' => 5556,
+        'type' => \ZMQ::SOCKET_PUB,
+    ),
     'publish'       => true,
+    'process'       => false,
 );

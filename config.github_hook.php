@@ -2,10 +2,22 @@
 
 $config = array(
     'debug_log' => '/var/log/code_distro/server_github_hook.debug',
-    'connect_req_port' => 5555,
-    'connect_req_type' => \ZMQ::SOCKET_REQ,
-    'bind_rep_port' => 5557,
-    'bind_rep_type' => \ZMQ::SOCKET_REP,
+    'broker_type' => 'ZeroMQ',
+    'input' => array(
+        'prot' => 'tcp://',
+        'ip' => '127.0.0.1',
+        'port' => 5556,
+        'type' => \ZMQ::SOCKET_SUB,
+        'filter' => '{"type":"github_hook"',
+    ),
+    'ack_required' => false,
+    'output' => array(
+        'prot' => 'tcp://',
+        'ip' => '127.0.0.1',
+        'port' => 5555,
+        'type' => \ZMQ::SOCKET_REQ,
+    ),
+    'publish'     => false,
     'process'       => 'GithubHook',
     //Processor specific
     'temp_directory' => '/tmp',

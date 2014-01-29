@@ -6,82 +6,81 @@
 
 namespace Codedistro;
 
+use Codedistro\Broker\ZeroMQBroker;
+
+
 /**
  * Server - receive and ack the Github hook POSTs, and then publish
  * over a 0mq PUB link
  */
 
-class Server extends Shared {
+class Server {
 
-    public static $config = null;
-    public static $log = null;
-
-    protected $ctx = null;
-    protected $repSock = null;
-    protected $pubSock = null;
+    public $config = null;
+    public $logger = null;
+    public $broker = null;
 
     public function __construct($config) {
-        $this->readConfig($config);
-        $this->setupLogging(self::$config['debug_log']);
-        if (!$this->initZmq()) {
+        $this->config = new Config($config);
+        $this->logger = new Logger($this->config->debug_log);
+        $className = "Codedistro\Broker\\" . $this->config->broker_type . 'Broker';
+        $this->broker = new $className();
+        if (!$this->broker->init($this->logger)) {
             die(1);
         }
-        if (self::$config['publish'] === true) {
-            if (!$this->bindZmq(self::$config['bind_pub_port'], self::$config['bind_pub_type'])) {
-                die(2);
-            }
+        try {
+            $this->broker->connect($this->config->output);
+        } catch (\Exception $e) {
+            echo $e->getMessage() . PHP_EOL;
+            die(2);
         }
-        if (!$this->bindZmq(self::$config['bind_rep_port'], self::$config['bind_rep_type'])) {
+        try {
+            $this->broker->connect($this->config->input);
+        } catch (\Exception $e) {
+            echo $e->getMessage() . PHP_EOL;
             die(3);
         }
-        $this->repLoop();
+        $input = join('', $this->config->input);
+        $output = join('', $this->config->output);
+        $this->repLoop($input, $output);
     }
 
-    public function publish($message) {
-        try {
-            $this->pubSock->send($message);
-        } catch (\Exception $e) {
-            self::$log->addError('Could not publish : ' . $e->getMessage());
-        }
-        return false;
-    }
-
-    public function repLoop() {
+    public function repLoop($input, $output) {
         while (true) {
-            $message = $this->repSock->recv();
-            self::$log->addDebug('Got message :' . print_r($message, true));
+            $message = $this->broker->recv($input);
 
-            //need to ack
-            $this->repSock->send('ack');
-            self::$log->addDebug('Sent ack');
-            if (self::$config['publish'] == true) {
-                self::$log->addDebug('Publishing...');
-                $this->publish($message);
+            $this->logger->addDebug('Got message :' . print_r($message, true));
+            if ($this->config->ack_required == true) { 
+                //need to ack
+                $this->logger->addDebug('Acking');
+                $this->broker->send($input, 'ack');
+            }
+
+            if ($this->config->publish == true) {
+                $this->logger->addDebug('Publishing...:' . $message);
+                $this->broker->send($output, $message);
+                $this->logger->addDebug('Published');
             }
             
-            if (
-                array_key_exists('process', self::$config)
-             && class_exists(__NAMESPACE__ . '\\' . self::$config['process'])
-            ) {
+            if (class_exists(__NAMESPACE__ . '\\Processor\\' . $this->config->process)) {
                 try {
-                    $obj = json_decode($message);
-                    if ($obj === null) {
-                        throw new \Exception('Message is not JSON');
-                    }
-                    $message = $obj;
-                    unset($obj);
-                    $className = __NAMESPACE__ . '\\' . self::$config['process'];
-                    self::$log->addDebug('Processing with ' . $className);
-                    $c = new $className(self::$log, self::$config);
+                    $className = __NAMESPACE__ . '\\Processor\\' . $this->config->process;
+                    $this->logger->addDebug('Processing with ' . $className);
+                    $c = new $className($this->logger, $this->config);
                     $response = $c->process($message);
                 } catch (\Exception $e) {
-                    self::$log->addError('Could not process : ' . $e->getMessage());
+                    $this->logger->addError('Could not process : ' . $e->getMessage());
                     return false;
                 }
                 try {
-                    $this->connectZmq(static::$config['connect_req_port'], static::$config['connect_req_type'])->send($response);
+                    $this->broker->send($output, $response);
                 } catch (\Exception $e) {
-                    self::$log->addError('Could not send response : ' . $e->getMessage());
+                    $this->logger->addError('Could not send response : ' . $e->getMessage());
+                }
+                try {
+                    $this->broker->recv($output);
+                } catch (\Exception $e) {
+                    $this->logger->addError('Could not recv ack : ' . $e->getMessage());
                 }
             }
         }
