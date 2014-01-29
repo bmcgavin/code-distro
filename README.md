@@ -1,7 +1,10 @@
-Initial readme
+# code-distro - send code over 0mq
 
-Push!
-Again!
-more
-arg
-And again
+# What?
+
+Distribute code patches over 0mq
+
+# Why?
+
+Got a central git repository? Got AWS servers you don't want to give
+access to said repository? Got hooks? This will help
