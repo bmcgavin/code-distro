@@ -12,5 +12,5 @@ try {
     print_r($e->getMessage());
 }
 print($output . PHP_EOL);
-$branch = preg_match('|^\#\# (.*)(\.\.\.)?|', $output, $matches);
+$branch = preg_match('|^\#\# ([^\.]+)|', $output, $matches);
 print('Got branch : ' . print_r($matches, true) . PHP_EOL);
