@@ -58,7 +58,12 @@ class GithubHook extends Processor {
         }
 
         $this->logger->addDebug($command);
-        $output = exec($command);
+        try {
+            $output = Process::getInstance($command)->run();
+        } catch (\Exception $e) {
+            $this->response->payload = $e->getMessage();
+            return json_encode($this->response);
+        }
         $this->logger->addDebug($output);
 
         //Get the diff in patch format
@@ -66,7 +71,12 @@ class GithubHook extends Processor {
         $this->logger->addDebug($filename);
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout > ' . $filename;
         $this->logger->addDebug($command);
-        $output = exec($command);
+        try {
+            $output = Process::getInstance($command)->run();
+        } catch (\Exception $e) {
+            $this->response->payload = $e->getMessage();
+            return json_encode($this->response);
+        }
         $this->logger->addDebug($output);
 
         //Send the diff in patch format back to the pub/sub server

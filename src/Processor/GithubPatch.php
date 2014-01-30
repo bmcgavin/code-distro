@@ -51,7 +51,12 @@ class GithubPatch extends Processor {
         } else {
             $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
             $this->logger->addDebug($command);
-            $revision = trim(exec($command));
+            try {
+                $revision = trim(Process::getInstance($command)->run());
+            } catch (\Exception $e) {
+                $this->response->payload = $e->getMessage();
+                return json_encode($this->response);
+            }
         }
         $this->logger->addDebug($revision);
 
@@ -71,7 +76,12 @@ class GithubPatch extends Processor {
         chdir($target_dir);
         $command = '/usr/bin/git apply < ' . $filename;
         $this->logger->addDebug($command);
-        $output = exec($command);
+        try {
+            $output = Process::getInstance($command)->run();
+        } catch (\Exception $e) {
+            $this->response->payload = $e->getMessage();
+            return json_encode($this->response);
+        }
         $this->logger->addDebug($output);
         chdir($oldDir);
         unlink($filename);
