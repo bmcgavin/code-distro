@@ -13,6 +13,7 @@ class GithubHook extends Processor {
         $this->next_type = 'github_patch';
         $this->response->type = $this->next_type;
         $this->requiredProperties = array(
+            'ref' => true,
             'before' => true,
             'after' => true,
             'repository' => array(
@@ -90,6 +91,7 @@ class GithubHook extends Processor {
             'after' => $this->data['after'],
             'user' => $user,
             'repo' => $repo,
+            'ref' => $this->data['ref'],
         );
         $this->response->payload = json_encode($payload);
         return json_encode($this->response);

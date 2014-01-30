@@ -19,6 +19,7 @@ class GithubPatch extends Processor {
             'after' => true,
             'user' => true,
             'repo' => true,
+            'ref' => true,
         );
 
     }
@@ -42,6 +43,26 @@ class GithubPatch extends Processor {
         }
         if (!is_dir($target_dir . '/.git')) {
             $this->response->payload = $target_dir . ' is not a git repo';
+            return json_encode($this->response);
+        }
+
+        //Check the current branch
+        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' status --porcelain -b';
+        $this->logger->addDebug($command);
+        try {
+            $output = Process::getInstance($command)->run();
+        } catch (\Exception $e) {
+            $this->response->payload = $e->getMessage();
+            return json_encode($this->response);
+        }
+        $this->logger->addDebug($output);
+        $branch = preg_match('|^\#\# ([^\.]+)|', $output, $matches);
+        $this->logger->addDebug('Got branch : ' . $branch);
+
+        //Check the current ref
+        $ref = basename($this->data['ref']);
+        if ($ref !== $branch) {
+            $this->response->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
             return json_encode($this->response);
         }
 
