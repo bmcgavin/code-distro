@@ -22,7 +22,13 @@ A pair of web servers, one with repository access and one without
 
 Github can send hooks based on pushes. Set up a repository hook on a machine that can communicate with Github, using src/ReceiveHook.php as a starting point.
 
-Trying a push now...
-And again
-Final time
-Arg, forgot the .gitrevision
+# Todo
+
+Safety checks (empty patches; remotes match)
+Branch support ? (deletion too) Probably an interesting one to solve
+Better Processor definitions
+
+# Done
+
+Better process execution (exec() is not great)
+Script to re/start all three servers in one
