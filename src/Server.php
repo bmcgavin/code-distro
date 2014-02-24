@@ -22,26 +22,28 @@ class Server {
 
     public function __construct($config) {
         $this->config = new Config($config);
-        $this->logger = new Logger($this->config->debug_log);
+        $this->logger = new Logger($this->config->debug_log, 'Server');
         $className = "Codedistro\Broker\\" . $this->config->broker_type . 'Broker';
         $this->broker = new $className();
         if (!$this->broker->init($this->logger)) {
             die(1);
         }
         try {
-            $this->broker->connect($this->config->output);
+            //Bind as a server
+            $config = $this->config->server_incoming[$this->config->broker_type];
+            $input = $this->broker->connect($config);
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;
             die(2);
         }
         try {
-            $this->broker->connect($this->config->input);
+            //Bind as another server
+            $config = $this->config->server_outgoing[$this->config->broker_type];
+            $output = $this->broker->connect($config);
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;
             die(3);
         }
-        $input = join('', $this->config->input);
-        $output = join('', $this->config->output);
         $this->repLoop($input, $output);
     }
 
@@ -50,43 +52,15 @@ class Server {
             $message = $this->broker->recv($input);
 
             $this->logger->addDebug('Got message :' . print_r($message, true));
-            if ($this->config->ack_required == true) { 
-                //need to ack
-                $this->logger->addDebug('Acking');
-                $this->broker->send($input, 'ack');
-            }
+            //need to ack
+            $this->logger->addDebug('Acking');
+            $this->broker->send($input, 'ack');
 
-            if ($this->config->publish == true) {
-                $this->logger->addDebug('Publishing...:' . $message);
-                $this->broker->send($output, $message);
-                $this->logger->addDebug('Published');
-            }
+            $this->logger->addDebug('Publishing...:' . $message);
+            $this->broker->send($output, $message);
+            $this->logger->addDebug('Published');
             
-            if (class_exists(__NAMESPACE__ . '\\Processor\\' . $this->config->process)) {
-                try {
-                    $className = __NAMESPACE__ . '\\Processor\\' . $this->config->process;
-                    $this->logger->addDebug('Processing with ' . $className);
-                    $c = new $className($this->logger, $this->config);
-                    $response = $c->process($message);
-                } catch (\Exception $e) {
-                    $this->logger->addError('Could not process : ' . $e->getMessage());
-                    return false;
-                }
-                try {
-                    $this->broker->send($output, $response);
-                } catch (\Exception $e) {
-                    $this->logger->addError('Could not send response : ' . $e->getMessage());
-                }
-                try {
-                    $this->broker->recv($output);
-                } catch (\Exception $e) {
-                    $this->logger->addError('Could not recv ack : ' . $e->getMessage());
-                }
-            }
         }
     }
-
-
-
 }
 
