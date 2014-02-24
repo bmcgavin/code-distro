@@ -46,6 +46,28 @@ class GithubPatch extends Processor {
             return json_encode($this->response);
         }
 
+        //Check the current branch
+        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' status --porcelain -b';
+        $this->logger->addDebug($command);
+        try {
+            $output = Process::getInstance($command)->run();
+        } catch (\Exception $e) {
+            $this->response->payload = $e->getMessage();
+            return json_encode($this->response);
+        }
+        $branch = '';
+        if (preg_match('|^\#\# ([^\.]+)|', $output, $matches)) {
+            $branch = trim($matches[1]);
+        }
+        $this->logger->addDebug('Got branch : ' . $branch);
+
+        //Check the current ref
+        $ref = basename($this->data['ref']);
+        if ($ref !== $branch) {
+            $this->response->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
+            return json_encode($this->response);
+        }
+
         //Check the current revision
         if (file_exists($target_dir . '/.gitrevision')) {
             $revision = file_get_contents($target_dir . '/.gitrevision');
