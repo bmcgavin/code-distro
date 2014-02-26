@@ -75,6 +75,7 @@ class Client {
                 //Do I have a response to send?
                 if ($response !== null) {
                     try {
+                        $this->logger->addDebug('Trying to send : ' . $response, true);
                         $this->broker->send($output, $response);
                     } catch (\Exception $e) {
                         $this->logger->addError('Could not send response : ' . $e->getMessage());
