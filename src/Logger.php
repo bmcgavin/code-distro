@@ -5,21 +5,25 @@ namespace Codedistro;
 use Monolog\Logger as MLogger;
 use Monolog\Handler\StreamHandler;
 
+/**
+ * Logger class should be static, really.
+ * No it shouldn't! Dependency Injection
+ */
 class Logger {
 
-    private static $log = null;
+    private $log = null;
 
     public function __construct($filename, $logname = 'log', $loglevel = MLogger::DEBUG) {
-        static::$log = new MLogger($logname);
-        static::$log->pushHandler(
+        $this->log = new MLogger($logname);
+        $this->log->pushHandler(
             new StreamHandler($filename, $loglevel)
         );
-        static::$log->addDebug('Got logfile');
+        $this->log->addDebug('Got logfile');
     }
 
     public function __call($name, $arguments) {
-        if (is_object(static::$log)) {
-            static::$log->{$name}($arguments[0]);
+        if (is_object($this->log)) {
+            $this->log->{$name}($arguments[0]);
         }
     }
 }

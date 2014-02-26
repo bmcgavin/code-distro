@@ -2,36 +2,40 @@
 
 namespace Codedistro;
 
+/**
+ * Message class should make a message object given a type
+ * and a payload
+ */
 class Message {
 
     private $msg = null;
-    private $type = null;
-    private $payload = null;
     private $data = null;
     private $logger = null;
 
-    public function __construct($log, $message = null) {
-        $this->logger = $log;
-        $this->payload = new \stdClass;
-        if ($message !== null) {
-            $this->msg = json_decode($message);
-            if ($this->msg === null) {
-                throw new \Exception('message is not valid JSON');
-            }
-            if (!property_exists($this->msg, 'type')) {
-                throw new \Exception('message has no type');
-            }
-            if (!property_exists($this->msg, 'payload')) {
-                throw new \Exception('message has no payload');
-            }
-            $this->type = $this->msg->type;
-            $this->payload = json_decode($this->msg->payload);
-            if ($this->payload === null) {
-                throw new \Exception('Payload is not valid JSON');
-            }
+    public $type = null;
+    public $payload = null;
+
+    static public function getInstance($log, $message) {
+        $obj = json_decode($message);
+        if (property_exists($obj, 'payload')) {
+            $payload = $obj->payload;
         }
+        if (property_exists($obj, 'type')) {
+            $type = $obj->type;
+        }
+        return new self($log, $payload, $type);
     }
 
+    public function __construct($log, $payload, $type) {
+        $this->logger = $log;
+        $this->payload = $payload;
+        $this->type = $type;
+    }
+
+    public function __toString() {
+        return json_encode($this);
+    }
+    
     public function validate($requirements, $message = null) {
         if ($message === null) {
             $message = $this->payload;

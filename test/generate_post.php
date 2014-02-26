@@ -6,8 +6,11 @@ $queue = new ZMQSocket($context, ZMQ::SOCKET_REQ);
 
 $queue->connect("tcp://127.0.0.1:5555");
 
+$message = new stdClass;
+$message->type = 'github_hook';
+
 if (array_key_exists(1, $argv)) {
-    $payload = $argv[1];
+    $payload = json_decode($argv[1]);
 } else {
     $payload = new stdClass;
     $payload->ref = 'ref/heads/master';
@@ -16,11 +19,11 @@ if (array_key_exists(1, $argv)) {
     $payload->repository = array(
         'url' => 'http://localhost/nowhere'
     );
-    $payload = json_encode($payload);
 }
+$message->payload = $payload;
 
 try {
-        $queue->send(json_encode(array('type' => 'github_hook', 'payload' => $payload)));
+        $queue->send(json_encode($message));
 } catch (Exception $e) {
         echo $e->getMessage();
 }

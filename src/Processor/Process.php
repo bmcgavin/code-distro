@@ -4,24 +4,14 @@ namespace Codedistro\Processor;
 
 class Process {
 
-    private $command = null;
-
-    public function __construct($command) {
-        $this->command = $command;
-    }
-
-    static public function getInstance($command) {
-        return new self($command);
-    }
-
-    public function run() {
+    static public function run($command) {
         $descriptorspec = array(
             0 => array('pipe', 'r'),
             1 => array('pipe', 'w'),
             2 => array('pipe', 'w')
         );
 
-        $process = proc_open($this->command, $descriptorspec, $pipes);
+        $process = proc_open($command, $descriptorspec, $pipes);
 
         if (!is_resource($process)) {
             throw new \Exception('Could not proc_open');

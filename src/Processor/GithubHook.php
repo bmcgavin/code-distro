@@ -11,7 +11,11 @@ class GithubHook extends Processor {
         parent::__construct($log, $config);
         $this->type = 'github_hook';
         $this->next_type = 'github_patch';
-        $this->response->type = $this->next_type;
+        $this->response = new Message(
+            $this->logger,
+            null,
+            $this->next_type
+        );
         $this->requiredProperties = array(
             'ref' => true,
             'before' => true,
@@ -22,19 +26,19 @@ class GithubHook extends Processor {
         );
     }
 
-    public function process($message) {
-        $this->logger->addDebug('validating message : ' . print_r($message, true));
+    public function process(\Codedistro\Message $message) {
+        $this->logger->addDebug('validating message : ' . $message);
         try {
             $this->validate($message);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
         
         //Clone the repo
         if (!is_writeable($this->config->temp_directory)) {
             $this->response->payload = 'Could not write to ' . $this->config->temp_directory;
-            return json_encode($this->response);
+            return $this->response;
         }
         if (!is_dir($this->config->temp_directory)) {
             mkdir($this->config->temp_directory);
@@ -60,10 +64,10 @@ class GithubHook extends Processor {
 
         $this->logger->addDebug($command);
         try {
-            $output = Process::getInstance($command)->run();
+            $output = Process::run($command);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
         $this->logger->addDebug($output);
 
@@ -73,10 +77,10 @@ class GithubHook extends Processor {
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout > ' . $filename;
         $this->logger->addDebug($command);
         try {
-            $output = Process::getInstance($command)->run();
+            $output = Process::run($command);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
         $this->logger->addDebug($output);
 
@@ -93,8 +97,8 @@ class GithubHook extends Processor {
             'repo' => $repo,
             'ref' => $this->data['ref'],
         );
-        $this->response->payload = json_encode($payload);
-        return json_encode($this->response);
+        $this->response->payload = $payload;
+        return $this->response;
 
     }
 }

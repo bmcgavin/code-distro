@@ -52,12 +52,13 @@ class Server {
             $message = $this->broker->recv($input);
 
             $this->logger->addDebug('Got message :' . print_r($message, true));
+            $m = Message::getInstance($this->logger, $message);
             //need to ack
             $this->logger->addDebug('Acking');
-            $this->broker->send($input, 'ack');
+            $this->broker->send($input, new Message($this->logger, '"ack"', 'ack'));
 
-            $this->logger->addDebug('Publishing...:' . $message);
-            $this->broker->send($output, $message);
+            $this->logger->addDebug('Publishing...:' . $m);
+            $this->broker->send($output, $m);
             $this->logger->addDebug('Published');
             
         }

@@ -11,7 +11,7 @@ class Complete extends Processor {
         parent::__construct($log, $config);
     }
 
-    public function process($message) {
+    public function process(\Codedistro\Message $message) {
         foreach($this->config->addresses as $address) {
             mail($address, 'Complete', $message);
         }

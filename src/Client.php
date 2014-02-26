@@ -60,12 +60,14 @@ class Client {
 
             $this->logger->addDebug('Got message :' . print_r($message, true));
 
+            $m = Message::getInstance($this->logger, $message);
+
             if (class_exists(__NAMESPACE__ . '\\Processor\\' . $this->config->processor)) {
                 try {
                     $className = __NAMESPACE__ . '\\Processor\\' . $this->config->processor;
                     $this->logger->addDebug('Processing with ' . $className);
                     $c = new $className($this->logger, $this->config);
-                    $response = $c->process($message);
+                    $response = $c->process($m);
                 } catch (\Exception $e) {
                     $this->logger->addError('Could not process : ' . $e->getMessage());
                     return false;

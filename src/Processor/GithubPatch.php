@@ -11,7 +11,11 @@ class GithubPatch extends Processor {
         parent::__construct($log, $config);
         $this->type = 'github_patch';
         $this->next_type = 'complete';
-        $this->response->type = $this->next_type;
+        $this->response = new Message(
+            $this->logger,
+            null,
+            $this->next_type
+        );
         
         $this->requiredProperties = array(
             'patch' => true,
@@ -24,39 +28,40 @@ class GithubPatch extends Processor {
 
     }
 
-    public function process($message) {
-        $this->logger->addDebug('validating message : ' . print_r($message, true));
+    public function process(\Codedistro\Message $message) {
+        $this->logger->addDebug('validating message : ' . $message);
         try {
             $this->validate($message);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
-
 
         //Find where the working copy is
         $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
         $target_dir = $this->config->{$target_dir_key};
         if (!is_dir($target_dir)) {
             $this->response->payload = $target_dir . ' does not exist';
-            return json_encode($this->response);
+            return $this->response;
         }
         if (!is_dir($target_dir . '/.git')) {
             $this->response->payload = $target_dir . ' is not a git repo';
-            return json_encode($this->response);
+            return $this->response;
         }
 
         //Check the current branch
         $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' status --porcelain -b';
         $this->logger->addDebug($command);
         try {
-            $output = Process::getInstance($command)->run();
+            $output = Process::run($command);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
+        $this->logger->addDebug($output);
         $branch = '';
-        if (preg_match('|^\#\# ([^\.]+)|', $output, $matches)) {
+        if (preg_match('|^\#\# ([\w]+)|', $output, $matches)) {
+            $this->logger->addDebug('Got matches : ' . print_r($matches, true));
             $branch = trim($matches[1]);
         }
         $this->logger->addDebug('Got branch : ' . $branch);
@@ -65,7 +70,7 @@ class GithubPatch extends Processor {
         $ref = basename($this->data['ref']);
         if ($ref !== $branch) {
             $this->response->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
-            return json_encode($this->response);
+            return $this->response;
         }
 
         //Check the current revision
@@ -75,10 +80,10 @@ class GithubPatch extends Processor {
             $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' log -n 1 --pretty=format:%H';
             $this->logger->addDebug($command);
             try {
-                $revision = trim(Process::getInstance($command)->run());
+                $revision = trim(Process::run($command));
             } catch (\Exception $e) {
                 $this->response->payload = $e->getMessage();
-                return json_encode($this->response);
+                return $this->response;
             }
         }
         $this->logger->addDebug($revision);
@@ -86,7 +91,7 @@ class GithubPatch extends Processor {
         //Check that before == current
         if ($revision !== $this->data['before']) {
             $this->response->payload = 'Not at correct patch level : wc @ ' . $revision . ', patch starts @ ' . $this->data['before'];
-            return json_encode($this->response);
+            return $this->response;
         }
 
         //Write patch to temp file
@@ -100,10 +105,10 @@ class GithubPatch extends Processor {
         $command = '/usr/bin/git apply < ' . $filename;
         $this->logger->addDebug($command);
         try {
-            $output = Process::getInstance($command)->run();
+            $output = Process::run($command);
         } catch (\Exception $e) {
             $this->response->payload = $e->getMessage();
-            return json_encode($this->response);
+            return $this->response;
         }
         $this->logger->addDebug($output);
         chdir($oldDir);
@@ -116,14 +121,8 @@ class GithubPatch extends Processor {
         $payload = array(
             'message' => 'done - new revision ' . $this->data['after']
         );
-        $this->response->payload = json_encode($payload);
-        return json_encode($this->response);
-
+        $this->response->payload = $payload;
+        return $this->response;
     }
-
-
 }
-
-
-
 

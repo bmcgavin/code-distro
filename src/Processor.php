@@ -16,19 +16,13 @@ abstract class Processor {
     public function __construct($log, $config) {
         $this->logger = $log;
         $this->config = $config;
-
-        $this->response = new \stdClass;
-        $this->response->type = 'placeholder';
-        $this->response->status = 'error';
-        $this->response->payload = 'processing error';
     }
 
-    protected function validate($message) {
-        $m = new Message($this->logger, $message);
+    protected function validate(\Codedistro\Message $m) {
         $m->validate($this->requiredProperties);
         $this->data = $m->getData();
         $this->logger->addDebug('data : ' . print_r($this->data, true));
     }
 
-    abstract function process($message);
+    abstract function process(\Codedistro\Message $message);
 }
