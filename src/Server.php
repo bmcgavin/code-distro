@@ -55,7 +55,9 @@ class Server {
             $m = Message::getInstance($this->logger, $message);
             //need to ack
             $this->logger->addDebug('Acking');
-            $this->broker->send($input, new Message($this->logger, '"ack"', 'ack'));
+            $e = new Encryption($this->config->keyLocation);
+            $this->broker->send($input, new Message($this->logger, '"ack"', 'ack', $e));
+            unset($e);
 
             $this->logger->addDebug('Publishing...:' . $m);
             $this->broker->send($output, $m);

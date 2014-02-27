@@ -60,7 +60,9 @@ class Client {
 
             $this->logger->addDebug('Got message :' . print_r($message, true));
 
-            $m = Message::getInstance($this->logger, $message);
+            $e = new Encryption($this->config->keyLocation);
+            $m = Message::getInstance($this->logger, $message, $e);
+            unset($e);
 
             if (class_exists(__NAMESPACE__ . '\\Processor\\' . $this->config->processor)) {
                 try {

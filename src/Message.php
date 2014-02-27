@@ -15,9 +15,15 @@ class Message {
     public $type = null;
     public $payload = null;
 
-    static public function getInstance($log, $message) {
+    /**
+     * All received messages
+     */
+    static public function getInstance($log, $message, \Codedistro\Encryption $encryption = null) {
         $obj = json_decode($message);
         if (property_exists($obj, 'payload')) {
+            if ($encryption !== null) {
+                $obj->payload = json_decode($encryption->decrypt($obj->payload));
+            }
             $payload = $obj->payload;
         }
         if (property_exists($obj, 'type')) {
@@ -26,8 +32,14 @@ class Message {
         return new self($log, $payload, $type);
     }
 
-    public function __construct($log, $payload, $type) {
+    /**
+     * All generated messages
+     */
+    public function __construct($log, $payload, $type, \Codedistro\Encryption $encryption = null) {
         $this->logger = $log;
+        if ($encryption !== null) {
+            $payload = $encryption->encrypt($payload);
+        }
         $this->payload = $payload;
         $this->type = $type;
     }
