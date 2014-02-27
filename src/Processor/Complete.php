@@ -7,7 +7,7 @@ use Codedistro\Message;
 
 class Complete extends Processor {
 
-    public function __construct($log, $config) {
+    public function __construct(\Codedistro\Logger $log, \Codedistro\Config $config) {
         parent::__construct($log, $config);
     }
 

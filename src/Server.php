@@ -22,15 +22,22 @@ class Server {
 
     public function __construct($config) {
         $this->config = new Config($config);
-        $this->logger = new Logger($this->config->debug_log, 'Server');
-        $className = "Codedistro\Broker\\" . $this->config->broker_type . 'Broker';
+        try {
+            $this->logger = new Logger($this->config->logFile, 'Server', $this->config->logLevel);
+        } catch (\Exception $e) {
+            $error = __CLASS__ . ": Could not initiate logger : " . $e->getMessage();
+            error_log($error);
+            die(1);
+
+        }
+        $className = "Codedistro\Broker\\" . $this->config->brokerType . 'Broker';
         $this->broker = new $className();
         if (!$this->broker->init($this->logger)) {
             die(1);
         }
         try {
             //Bind as a server
-            $config = $this->config->server_incoming[$this->config->broker_type];
+            $config = $this->config->serverIncoming[$this->config->brokerType];
             $input = $this->broker->connect($config);
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;
@@ -38,7 +45,7 @@ class Server {
         }
         try {
             //Bind as another server
-            $config = $this->config->server_outgoing[$this->config->broker_type];
+            $config = $this->config->serverOutgoing[$this->config->brokerType];
             $output = $this->broker->connect($config);
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;

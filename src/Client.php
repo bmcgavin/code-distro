@@ -20,16 +20,28 @@ class Client {
     public $broker = null;
 
     public function __construct($config, $prefix) {
-        $this->config = new Config($config, $prefix);
-        $this->logger = new Logger($this->config->debug_log, 'Client.' . $prefix);
-        $className = "Codedistro\Broker\\" . $this->config->broker_type . 'Broker';
+        try {
+            $this->config = new Config($config, $prefix);
+        } catch (\Exception $e) {
+            $error = __CLASS__ . ": Could not initiate config : " . $e->getMessage();
+            error_log($error);
+            die(1);
+        }
+        try {
+            $this->logger = new Logger($this->config->logFile, 'Client.' . $prefix, $this->config->logLevel);
+        } catch (\Exception $e) {
+            $error = __CLASS__ . ": Could not initiate logger : " . $e->getMessage();
+            error_log($error);
+            die(1);
+        }
+        $className = "Codedistro\Broker\\" . $this->config->brokerType . 'Broker';
         $this->broker = new $className();
         if (!$this->broker->init($this->logger)) {
             die(1);
         }
         try {
             //Subscribe - get incoming
-            $config = $this->config->client_incoming[$this->config->broker_type];
+            $config = $this->config->clientIncoming[$this->config->brokerType];
             $config['filter'] = $this->parseFilter($prefix);
             $this->logger->addDebug(print_r($config, true));
             $input = $this->broker->connect($config);
@@ -39,7 +51,7 @@ class Client {
         }
         try {
             //Reply comms - get outgoing
-            $config = $this->config->client_outgoing[$this->config->broker_type];
+            $config = $this->config->clientOutgoing[$this->config->brokerType];
             $output = $this->broker->connect($config);
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;
@@ -50,7 +62,7 @@ class Client {
 
     private function parseFilter($prefix) {
         $this->logger->addDebug('parsing filter for ' . $prefix);
-        $key = $this->config->broker_type . '.filter';
+        $key = $this->config->brokerType . '.filter';
         return str_replace('__name__', $prefix, $this->config->{$key});
     }
 

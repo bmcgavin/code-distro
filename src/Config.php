@@ -21,6 +21,9 @@ class Config {
         }
         $this->data = $config;
         if ($prefix !== '') {
+            if (!array_key_exists($prefix, $this->data)) {
+                throw new \Exception('Prefix ' . $prefix . ' supplied but not found in config');
+            }
             $this->prefix = $prefix;
         }
         return true;

@@ -7,16 +7,10 @@ use Codedistro\Message;
 
 class GithubPatch extends Processor {
 
-    public function __construct($log, $config) {
+    public function __construct(\Codedistro\Logger $log, \Codedistro\Config $config) {
         parent::__construct($log, $config);
-        $this->type = 'github_patch';
-        $this->next_type = 'complete';
-        $this->response = new Message(
-            $this->logger,
-            null,
-            $this->next_type
-        );
-        
+        $this->type = 'Complete';
+        $this->payload = null;
         $this->requiredProperties = array(
             'patch' => true,
             'before' => true,
@@ -33,20 +27,20 @@ class GithubPatch extends Processor {
         try {
             $this->validate($message);
         } catch (\Exception $e) {
-            $this->response->payload = $e->getMessage();
-            return $this->response;
+            $this->payload = $e->getMessage();
+            return $this->output();
         }
 
         //Find where the working copy is
         $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
         $target_dir = $this->config->{$target_dir_key};
         if (!is_dir($target_dir)) {
-            $this->response->payload = $target_dir . ' does not exist';
-            return $this->response;
+            $this->payload = $target_dir . ' does not exist';
+            return $this->output();
         }
         if (!is_dir($target_dir . '/.git')) {
-            $this->response->payload = $target_dir . ' is not a git repo';
-            return $this->response;
+            $this->payload = $target_dir . ' is not a git repo';
+            return $this->output();
         }
 
         //Check the current branch
@@ -55,8 +49,8 @@ class GithubPatch extends Processor {
         try {
             $output = Process::run($command);
         } catch (\Exception $e) {
-            $this->response->payload = $e->getMessage();
-            return $this->response;
+            $this->payload = $e->getMessage();
+            return $this->output();
         }
         $this->logger->addDebug($output);
         $branch = '';
@@ -69,8 +63,8 @@ class GithubPatch extends Processor {
         //Check the current ref
         $ref = basename($this->data['ref']);
         if ($ref !== $branch) {
-            $this->response->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
-            return $this->response;
+            $this->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
+            return $this->output();
         }
 
         //Check the current revision
@@ -82,16 +76,16 @@ class GithubPatch extends Processor {
             try {
                 $revision = trim(Process::run($command));
             } catch (\Exception $e) {
-                $this->response->payload = $e->getMessage();
-                return $this->response;
+                $this->payload = $e->getMessage();
+                return $this->output();
             }
         }
         $this->logger->addDebug($revision);
 
         //Check that before == current
         if ($revision !== $this->data['before']) {
-            $this->response->payload = 'Not at correct patch level : wc @ ' . $revision . ', patch starts @ ' . $this->data['before'];
-            return $this->response;
+            $this->payload = 'Not at correct patch level : wc @ ' . $revision . ', patch starts @ ' . $this->data['before'];
+            return $this->output();
         }
 
         //Write patch to temp file
@@ -107,8 +101,8 @@ class GithubPatch extends Processor {
         try {
             $output = Process::run($command);
         } catch (\Exception $e) {
-            $this->response->payload = $e->getMessage();
-            return $this->response;
+            $this->payload = $e->getMessage();
+            return $this->output();
         }
         $this->logger->addDebug($output);
         chdir($oldDir);
@@ -117,12 +111,12 @@ class GithubPatch extends Processor {
         //Store new revision
         file_put_contents($target_dir . '/.gitrevision', $this->data['after']);
 
-        $this->response->status = 'success';
+        $this->status = 'success';
         $payload = array(
             'message' => 'done - new revision ' . $this->data['after']
         );
-        $this->response->payload = $payload;
-        return $this->response;
+        $this->payload = $payload;
+        return $this->output();
     }
 }
 

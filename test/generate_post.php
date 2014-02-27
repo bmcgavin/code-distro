@@ -7,7 +7,7 @@ $queue = new ZMQSocket($context, ZMQ::SOCKET_REQ);
 $queue->connect("tcp://127.0.0.1:5555");
 
 $message = new stdClass;
-$message->type = 'github_hook';
+$message->type = 'GithubHook';
 
 if (array_key_exists(1, $argv)) {
     $payload = json_decode($argv[1]);
