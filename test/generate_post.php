@@ -24,7 +24,7 @@ $message->payload = json_encode($payload);
 
 require __DIR__.'/../src/Encryption.php';
 
-$e = new \Codedistro\Encryption('key');
+$e = new \Codedistro\Encryption('/etc/code-distro/key');
 $message->payload = $e->encrypt($message->payload);
 try {
         $queue->send(json_encode($message));
