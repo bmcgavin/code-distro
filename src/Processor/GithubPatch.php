@@ -35,11 +35,12 @@ class GithubPatch extends Processor {
         $incomingBranch = basename($this->data['ref']);
 
         //Find where the working copy is
-        $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
-        if (property_exists($this->config, $target_dir_key . '_' . $incomingBranch)) {
-            $target_dir_key .= '_' . $incomingBranch;
-        }
+        $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'] . '_' . $incomingBranch;
         $target_dir = $this->config->{$target_dir_key};
+        if ($target_dir == null) {
+            $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
+            $target_dir = $this->config->{$target_dir_key};
+        }
         if (!is_dir($target_dir)) {
             $this->payload = $target_dir . ' does not exist';
             return $this->output();
