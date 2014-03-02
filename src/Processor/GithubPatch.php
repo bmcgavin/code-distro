@@ -31,8 +31,14 @@ class GithubPatch extends Processor {
             return $this->output();
         }
 
+        //Get incoming branch
+        $incomingBranch = basename($this->data['ref']);
+
         //Find where the working copy is
         $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
+        if (property_exists($this->config, $target_dir_key . '_' . $incomingBranch)) {
+            $target_dir_key .= '_' . $incomingBranch;
+        }
         $target_dir = $this->config->{$target_dir_key};
         if (!is_dir($target_dir)) {
             $this->payload = $target_dir . ' does not exist';
@@ -61,9 +67,8 @@ class GithubPatch extends Processor {
         $this->logger->addDebug('Got branch : ' . $branch);
 
         //Check the current ref
-        $ref = basename($this->data['ref']);
-        if ($ref !== $branch) {
-            $this->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $ref . ')';
+        if ($incomingBranch !== $branch) {
+            $this->payload = 'Patch not for our branch (checked out : ' . $branch . ', patch for ' . $incomingBranch . ')';
             return $this->output();
         }
 
