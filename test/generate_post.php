@@ -20,12 +20,14 @@ if (array_key_exists(1, $argv)) {
         'url' => 'http://localhost/nowhere'
     );
 }
-$message->payload = json_encode($payload);
+$message->payload = $payload;
 
 require __DIR__.'/../src/Encryption.php';
 
-$e = new \Codedistro\Encryption('/etc/code-distro/key');
-$message->payload = $e->encrypt($message->payload);
+if (file_exists('/etc/code-distro/key')) {
+    $e = new \Codedistro\Encryption('/etc/code-distro/key');
+    $message->payload = $e->encrypt($message->payload);
+}
 try {
         $queue->send(json_encode($message));
 } catch (Exception $e) {

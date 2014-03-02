@@ -62,7 +62,12 @@ class Server {
             $m = Message::getInstance($this->logger, $message);
             //need to ack
             $this->logger->addDebug('Acking');
-            $e = new Encryption($this->config->keyLocation);
+            $e = null;
+            if (file_exists($this->config->keyLocation)) {
+                $e = new Encryption($this->config->keyLocation);
+            } else {
+                $this->logger->addWarning('Encryption disabled, ' . $this->config->keyLocation . ' does not exist');
+            }
             $this->broker->send($input, new Message($this->logger, '"ack"', 'ack', $e));
             unset($e);
 

@@ -72,7 +72,12 @@ class Client {
 
             $this->logger->addDebug('Got message :' . print_r($message, true));
 
-            $e = new Encryption($this->config->keyLocation);
+            $e = null;
+            if (file_exists($this->config->keyLocation)) {
+                $e = new Encryption($this->config->keyLocation);
+            } else {
+                $this->logger->addWarning('Encryption disabled, ' . $this->config->keyLocation . ' does not exist');
+            }
             $m = Message::getInstance($this->logger, $message, $e);
             unset($e);
 

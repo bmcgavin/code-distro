@@ -22,7 +22,7 @@ class Message {
         $obj = json_decode($message);
         if (property_exists($obj, 'payload')) {
             if ($encryption !== null) {
-                $obj->payload = json_decode($encryption->decrypt($obj->payload));
+                $obj->payload = $encryption->decrypt($obj->payload);
             }
             $payload = $obj->payload;
         }

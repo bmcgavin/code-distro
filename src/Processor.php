@@ -41,11 +41,15 @@ abstract class Processor {
         if ($this->status == 'failure') {
             $this->type = 'Complete';
         }
+        $e = null;
+        if (file_exists($this->config->keyLocation)) {
+            $e = new Encryption($this->config->keyLocation);
+        }
         return new Message(
             $this->logger,
-            json_encode($this->payload),
+            $this->payload,
             $this->type,
-            new Encryption($this->config->keyLocation)
+            $e
         );
     }
 }

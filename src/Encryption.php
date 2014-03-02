@@ -10,9 +10,6 @@ class Encryption {
     private $keyLocation = null;
 
     public function __construct($keyLocation) {
-        if (!file_exists($keyLocation) || !is_readable($keyLocation)) {
-            throw new \Exception('Cannot find key file ' . $keyLocation);
-        }
         $this->keyLocation = $keyLocation;
         $this->td = mcrypt_module_open("twofish", "", "cfb", "");
 
@@ -27,7 +24,7 @@ class Encryption {
         mcrypt_generic_init($this->td, $key, $this->iv);
         $key = 'overwrittenwithplaceholder';
         unset($key);
-        $encrypted = mcrypt_generic($this->td, $plaintext);
+        $encrypted = mcrypt_generic($this->td, json_encode($plaintext));
         $encrypted = $this->iv.$encrypted;
         mcrypt_generic_deinit($this->td);
         return base64_encode($encrypted);
@@ -43,7 +40,7 @@ class Encryption {
         $key = 'overwrittenwithplaceholder';
         unset($key);
         $decrypted = mdecrypt_generic($this->td, $ciphertext);
-        return $decrypted;
+        return json_decode($decrypted);
     }
 
     public function __destruct() {
