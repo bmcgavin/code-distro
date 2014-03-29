@@ -17,7 +17,7 @@ GithubHook should run on the  machine with repository access ('public').
 It will receive the hook, fetch the repo, and do the diff 
 between the commits to generate the patch
 
-GithubPatch should run on the machine without repo access ('private'). 
+GitPatch should run on the machine without repo access ('private'). 
 It will receive the patch, check that the working copy matches in branch and revision, and apply the patch.
 
 ## Quickstart

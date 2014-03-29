@@ -5,18 +5,21 @@ namespace Codedistro\Processor;
 use Codedistro\Processor;
 use Codedistro\Message;
 
-class GithubHook extends Processor {
+class BitbucketHook extends Processor {
 
     public function __construct(\Codedistro\Logger $log, \Codedistro\Config $config) {
         parent::__construct($log, $config);
         $this->type = 'GitPatch';
         $this->payload = null;
         $this->requiredProperties = array(
-            'ref' => true,
-            'before' => true,
-            'after' => true,
+            'commits' => array(
+                'node' => true,
+                'parents' => true,
+                'branch' => true,
+            ),
             'repository' => array(
-                'url' => true,
+                'owner' => true,
+                'slug' => true,
             ),
         );
     }
@@ -41,20 +44,20 @@ class GithubHook extends Processor {
             mkdir($this->config->tempDirectory);
         }
 
-        $user = basename(dirname($this->data['url']));
+        $user = $this->data['owner'];
         $this->logger->addDebug('User : ' . $user);
         if (!is_dir($this->config->tempDirectory . DIRECTORY_SEPARATOR . $user)) {
             mkdir($this->config->tempDirectory . DIRECTORY_SEPARATOR . $user);
         }
 
-        $repo = basename($this->data['url']);
+        $repo = $this->data['slug'];
         $this->logger->addDebug('Repo : ' . $repo);
         $target_dir = $this->config->tempDirectory . DIRECTORY_SEPARATOR . $user . DIRECTORY_SEPARATOR . $repo;
         $this->logger->addDebug('TargetDir : ' . $target_dir);
 
         if (!is_dir($target_dir)) {
             mkdir($target_dir);
-            $command = '/usr/bin/git clone git@github.com:' . $user . '/' . $repo . ' ' . $target_dir;
+            $command = '/usr/bin/git clone git@bitbucket.org:' . $user . '/' . $repo . '.git ' . $target_dir;
         } else {
             $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' fetch';
         }
@@ -72,7 +75,7 @@ class GithubHook extends Processor {
         //Get the diff in patch format
         $filename = tempnam($this->config->tempDirectory, $user . $repo);
         $this->logger->addDebug($filename);
-        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['before'] . '..' . $this->data['after'] . ' --stdout > ' . $filename;
+        $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' format-patch ' . $this->data['parents'][0] . '..' . $this->data['node'] . ' --stdout > ' . $filename;
         $this->logger->addDebug($command);
         try {
             $output = Process::run($command);
@@ -90,17 +93,16 @@ class GithubHook extends Processor {
         $this->status = 'success';
         $payload = array(
             'patch' => $patch,
-            'before' => $this->data['before'],
-            'after' => $this->data['after'],
+            'before' => $this->data['parents'][0],
+            'after' => $this->data['node'],
             'user' => $user,
             'repo' => $repo,
-            'ref' => $this->data['ref'],
+            'ref' => $this->data['branch'],
         );
         $this->payload = $payload;
         return $this->output();
 
     }
 }
-
 
 

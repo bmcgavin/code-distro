@@ -5,7 +5,7 @@ namespace Codedistro\Processor;
 use Codedistro\Processor;
 use Codedistro\Message;
 
-class GithubPatch extends Processor {
+class GitPatch extends Processor {
 
     public function __construct(\Codedistro\Logger $log, \Codedistro\Config $config) {
         parent::__construct($log, $config);
@@ -40,6 +40,10 @@ class GithubPatch extends Processor {
         if ($target_dir == null) {
             $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
             $target_dir = $this->config->{$target_dir_key};
+        }
+        if ($target_dir == null) {
+            $this->payload= "Cannot find key for this repo";
+            return $this->output();
         }
         if (!is_dir($target_dir)) {
             $this->payload = $target_dir . ' does not exist';

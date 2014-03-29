@@ -55,6 +55,10 @@ class Message {
         $this->logger->addDebug('validate requirements input : ' . print_r($requirements, true));
         $this->logger->addDebug('validateArray message input : ' . print_r($message, true));
         foreach($requirements as $key => $value) {
+            //BB Hack - if it's an array, take the first index
+            if (is_array($message)) {
+                $message = $message[0];
+            }
             if (!property_exists($message, $key)) {
                 throw new \Exception('$message has no ' . $key);
             }
