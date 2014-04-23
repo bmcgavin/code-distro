@@ -93,8 +93,8 @@ class GitPatch extends Processor {
         $this->logger->addDebug($revision);
 
         //Check that before == current
-        if ($revision !== $this->data['before']) {
-            $this->payload = 'Not at correct patch level : wc @ ' . $revision . ', patch starts @ ' . $this->data['before'];
+        if (substr($revision, 0, strlen($this->data['before'])) !== $this->data['before']) {
+            $this->payload = 'Not at correct patch level : wc @ ' . substr($revision, 0, strlen($this->data['before'])) . ', patch starts @ ' . $this->data['before'];
             return $this->output();
         }
 
