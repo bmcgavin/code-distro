@@ -41,6 +41,11 @@ class GitPatch extends Processor {
             $target_dir_key = 'repo_' . $this->data['user'] . '_' . $this->data['repo'];
             $target_dir = $this->config->{$target_dir_key};
         }
+        //Try generic
+        if ($target_dir == null) {
+            $target_dir_key = 'repo_' . $this->data['user'] . '_*';
+            $target_dir = str_replace('*', $this->data['repo'], $this->config->{$target_dir_key});
+        }
         if ($target_dir == null) {
             $this->payload= "Cannot find key for this repo";
             return $this->output();
