@@ -10,6 +10,6 @@
         "psr-4": {"Codedistro\\": "src/"}
     },
     "require": {
-        "monolog/monolog": "dev-master"
+        "monolog/monolog": "*"
     }
 }
