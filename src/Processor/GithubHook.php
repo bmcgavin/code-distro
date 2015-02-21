@@ -57,6 +57,8 @@ class GithubHook extends Processor {
         }
 
         $repo = basename($this->data['url']);
+        //Trim .git
+        $repo = preg_replace('/\.git$/', '', $repo);
         $this->logger->addDebug('Repo : ' . $repo);
         $target_dir = $this->config->tempDirectory . DIRECTORY_SEPARATOR . $user . DIRECTORY_SEPARATOR . $repo;
         $this->logger->addDebug('TargetDir : ' . $target_dir);
