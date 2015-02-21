@@ -46,7 +46,7 @@ class GithubHook extends Processor {
         //Support other git providers
         $server = "git@github.com";
         if (preg_match('/^(.+)@(.+):(.+)$/', $user, $matches)) {
-            $this->logger->addDebug('Regex match : ' . print_r($matches));
+            $this->logger->addDebug('Regex match : ' . print_r($matches, true));
             $user = $matches[3];
             $server = $matches[1] . '@' . $matches[2];
         }
