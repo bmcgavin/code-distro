@@ -42,6 +42,15 @@ class GithubHook extends Processor {
         }
 
         $user = basename(dirname($this->data['url']));
+
+        //Support other git providers
+        $server = "git@github.com"
+        if (preg_match('/^(.+)@(.+):(.+)$/', $user, $matches)) {
+            $this->logger->addDebug('Regex match : ' . print_r($matches));
+            $user = $matches[3];
+            $server = $matches[1] . '@' . $matches[2];
+        }
+
         $this->logger->addDebug('User : ' . $user);
         if (!is_dir($this->config->tempDirectory . DIRECTORY_SEPARATOR . $user)) {
             mkdir($this->config->tempDirectory . DIRECTORY_SEPARATOR . $user);
@@ -54,7 +63,7 @@ class GithubHook extends Processor {
 
         if (!is_dir($target_dir)) {
             mkdir($target_dir);
-            $command = '/usr/bin/git clone git@github.com:' . $user . '/' . $repo . ' ' . $target_dir;
+            $command = '/usr/bin/git clone ' . $server . ':' . $user . '/' . $repo . ' ' . $target_dir;
         } else {
             $command = '/usr/bin/git --git-dir=' . $target_dir . '/.git --work-tree=' . $target_dir . ' fetch';
         }
