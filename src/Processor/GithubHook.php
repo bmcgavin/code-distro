@@ -50,6 +50,7 @@ class GithubHook extends Processor {
             $user = $matches[3];
             $server = $matches[1] . '@' . $matches[2];
         }
+        $this->logger->addDebug('Server : ' . $server);
 
         $this->logger->addDebug('User : ' . $user);
         if (!is_dir($this->config->tempDirectory . DIRECTORY_SEPARATOR . $user)) {
@@ -57,9 +58,10 @@ class GithubHook extends Processor {
         }
 
         $repo = basename($this->data['url']);
+        $this->logger->addDebug('Url : "' . $this->data['url'] . '"');
         //Trim .git
         $repo = preg_replace('/\.git$/', '', $repo);
-        $this->logger->addDebug('Repo : ' . $repo);
+        $this->logger->addDebug('Repo : "' . $repo . '"');
         $target_dir = $this->config->tempDirectory . DIRECTORY_SEPARATOR . $user . DIRECTORY_SEPARATOR . $repo;
         $this->logger->addDebug('TargetDir : ' . $target_dir);
 
