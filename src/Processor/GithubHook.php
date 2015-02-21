@@ -44,7 +44,7 @@ class GithubHook extends Processor {
         $user = basename(dirname($this->data['url']));
 
         //Support other git providers
-        $server = "git@github.com"
+        $server = "git@github.com";
         if (preg_match('/^(.+)@(.+):(.+)$/', $user, $matches)) {
             $this->logger->addDebug('Regex match : ' . print_r($matches));
             $user = $matches[3];
